@@ -42,6 +42,7 @@ def make_nn_funs(layer_sizes, L2_reg, noise_variance, nonlinearity=np.tanh):
 
 
 def build_toy_dataset(n_data=100, noise_std=0.1, toy_example='blackbox'):
+    print(toy_example)
     if toy_example == "blackbox":
         D = 1
         rs = npr.RandomState(0)
@@ -51,7 +52,7 @@ def build_toy_dataset(n_data=100, noise_std=0.1, toy_example='blackbox'):
         inputs = (inputs - 4.0) / 4.0
         inputs  = inputs.reshape((len(inputs), D))
         targets = targets.reshape((len(targets), D))
-    elif toy_example == "wierstra":
+    if toy_example == "Wierstra":
         noise_std = 0.02
         inputs = np.linspace(0, 0.5, n_data).reshape(-1,1)
         n_traces = 1
@@ -71,7 +72,7 @@ def build_toy_dataset(n_data=100, noise_std=0.1, toy_example='blackbox'):
 
 if __name__ == '__main__':
 
-    toy_example = "blackbox" # blackbox or Wierstra
+    toy_example = "Wierstra" # blackbox or Wierstra
 
     # Specify inference problem by its unnormalized log-posterior.
     rbf = lambda x: np.exp(-x**2)
@@ -106,7 +107,7 @@ if __name__ == '__main__':
         if toy_example == "blackbox":
             plot_inputs = np.linspace(-8, 8, num=400)
             y_lim = [-2, 3]
-        elif toy_example == "wierstra":
+        elif toy_example == "Wierstra":
             plot_inputs = np.linspace(-0.2, 1.2, num=400)
             y_lim = [-0.6, 1.2]
 
@@ -115,6 +116,7 @@ if __name__ == '__main__':
 
         # Plot data and functions.
         plt.cla()
+        plt.title(toy_example)
         ax.plot(inputs.ravel(), targets.ravel(), 'bx')
         ax.plot(plot_inputs, outputs[:, :, 0].T)
         ax.set_ylim(y_lim)
