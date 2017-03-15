@@ -41,15 +41,32 @@ def make_nn_funs(layer_sizes, L2_reg, noise_variance, nonlinearity=np.tanh):
     return num_weights, predictions, logprob
 
 
-def build_toy_dataset(n_data=40, noise_std=0.1):
-    D = 1
-    rs = npr.RandomState(0)
-    inputs  = np.concatenate([np.linspace(0, 2, num=n_data/2),
-                              np.linspace(6, 8, num=n_data/2)])
-    targets = np.cos(inputs) + rs.randn(n_data) * noise_std
-    inputs = (inputs - 4.0) / 4.0
-    inputs  = inputs.reshape((len(inputs), D))
-    targets = targets.reshape((len(targets), D))
+def build_toy_dataset(n_data=100, noise_std=0.1):
+    toy_example = "blackbox" # or Wierstra or  blackbox
+    if toy_example == "Wierstra":
+        D = 1
+        rs = npr.RandomState(0)
+        inputs  = np.concatenate([np.linspace(0, 2, num=n_data/2),
+                                  np.linspace(6, 8, num=n_data/2)])
+        targets = np.cos(inputs) + rs.randn(n_data) * noise_std
+        inputs = (inputs - 4.0) / 4.0
+        inputs  = inputs.reshape((len(inputs), D))
+        targets = targets.reshape((len(targets), D))
+    elif toy_example == "blackbox":
+        noise_std = 0.02
+        inputs = np.linspace(0, 0.5, n_data).reshape(-1,1)
+        n_traces = 1
+        noise1 = noise_std * np.random.randn(n_data, n_traces)
+        noise2 = noise_std * np.random.randn(n_data, n_traces)
+        noise3 = noise_std * np.random.randn(n_data, n_traces)
+        x1 = np.tile(input, n_traces).reshape(n_traces, -1)
+        term1 = 0.3 * np.sin(2 * np.pi * (inputs + noise1))
+        term2 = 0.3 * np.sin(4 * np.pi * (inputs + noise2))
+        targets = inputs + term1 + term2 + noise3
+        x_real = np.linspace(-0.2, 1.2, n_traces)
+        y_real = x_real + 0.3 * np.sin(2 * np.pi * (x_real)) + 0.3 * np.sin(4 * np.pi * (x_real))
+        targets = targets.reshape(-1,1)
+
     return inputs, targets
 
 
