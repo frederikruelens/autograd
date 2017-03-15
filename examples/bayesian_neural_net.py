@@ -41,9 +41,8 @@ def make_nn_funs(layer_sizes, L2_reg, noise_variance, nonlinearity=np.tanh):
     return num_weights, predictions, logprob
 
 
-def build_toy_dataset(n_data=100, noise_std=0.1):
-    toy_example = "blackbox" # or Wierstra or  blackbox
-    if toy_example == "Wierstra":
+def build_toy_dataset(n_data=100, noise_std=0.1, toy_example='blackbox'):
+    if toy_example == "blackbox":
         D = 1
         rs = npr.RandomState(0)
         inputs  = np.concatenate([np.linspace(0, 2, num=n_data/2),
@@ -52,7 +51,7 @@ def build_toy_dataset(n_data=100, noise_std=0.1):
         inputs = (inputs - 4.0) / 4.0
         inputs  = inputs.reshape((len(inputs), D))
         targets = targets.reshape((len(targets), D))
-    elif toy_example == "blackbox":
+    elif toy_example == "wierstra":
         noise_std = 0.02
         inputs = np.linspace(0, 0.5, n_data).reshape(-1,1)
         n_traces = 1
@@ -72,6 +71,8 @@ def build_toy_dataset(n_data=100, noise_std=0.1):
 
 if __name__ == '__main__':
 
+    toy_example = "blackbox" # blackbox or Wierstra
+
     # Specify inference problem by its unnormalized log-posterior.
     rbf = lambda x: np.exp(-x**2)
     relu = lambda x: np.maximum(x, 0.)
@@ -79,7 +80,7 @@ if __name__ == '__main__':
         make_nn_funs(layer_sizes=[1, 20, 20, 1], L2_reg=0.1,
                      noise_variance=0.01, nonlinearity=rbf)
 
-    inputs, targets = build_toy_dataset()
+    inputs, targets = build_toy_dataset(n_data = 100, noise_std=0.1, toy_example=toy_example)
     log_posterior = lambda weights, t: logprob(weights, inputs, targets)
 
     # Build variational objective.
@@ -102,14 +103,21 @@ if __name__ == '__main__':
         mean, log_std = unpack_params(params)
         #rs = npr.RandomState(0)
         sample_weights = rs.randn(10, num_weights) * np.exp(log_std) + mean
-        plot_inputs = np.linspace(-8, 8, num=400)
+        if toy_example == "blackbox":
+            plot_inputs = np.linspace(-8, 8, num=400)
+            y_lim = [-2, 3]
+        elif toy_example == "wierstra":
+            plot_inputs = np.linspace(-0.2, 1.2, num=400)
+            y_lim = [-0.6, 1.2]
+
+
         outputs = predictions(sample_weights, np.expand_dims(plot_inputs, 1))
 
         # Plot data and functions.
         plt.cla()
         ax.plot(inputs.ravel(), targets.ravel(), 'bx')
         ax.plot(plot_inputs, outputs[:, :, 0].T)
-        ax.set_ylim([-2, 3])
+        ax.set_ylim(y_lim)
         plt.draw()
         plt.pause(1.0/60.0)
 
